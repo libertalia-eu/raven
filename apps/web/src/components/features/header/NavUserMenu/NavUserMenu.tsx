@@ -22,6 +22,7 @@ import { FrappeError } from "frappe-react-sdk"
 import { useIsPushNotificationEnabled } from "@hooks/fetchers/useIsPushNotificationEnabled"
 import { Spinner } from "@components/ui/spinner"
 import { useCloudSettings } from "@hooks/useCloudSettings"
+import AppsSubMenu from "./AppsSubMenu"
 
 const NavUserMenu = () => {
 
@@ -109,6 +110,7 @@ const NavUserMenu = () => {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <StatusSubMenu />
+                <AppsSubMenu />
                 <DropdownMenuItem onClick={() => setOpenSettingsDialog("profile")}>
                     <SettingsIcon />
                     <span>{_("Settings")}</span>
