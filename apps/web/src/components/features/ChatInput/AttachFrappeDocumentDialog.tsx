@@ -61,10 +61,7 @@ const AttachFrappeDocumentDialog = ({ channelID, open, onOpenChange, hideTrigger
     // Fresh pickers every time the dialog opens — the previous pick is already
     // staged (or was abandoned), so prefilling it only invites double-attaches.
     useEffect(() => {
-        if (isOpen) {
-            reset({ doctype: '', docname: '' })
-            setSource('frappe')
-        }
+        if (isOpen) reset({ doctype: '', docname: '' })
     }, [isOpen, reset])
 
     // A docname is meaningless once the doctype changes underneath it.
