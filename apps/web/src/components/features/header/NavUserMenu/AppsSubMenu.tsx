@@ -3,14 +3,16 @@ import { DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenu
 import { useApps } from "@hooks/useApps"
 import _ from "@lib/translate"
 
-/** The window name makes a second click reuse the window; `noopener` would ignore the name, so the opener is cut afterwards. */
+/** The window name makes a second click reuse the window; `noopener` would ignore the name, and an opener cut after opening the address does not hold. So the empty window opens first, loses its opener, and only then gets the address. */
 const openApp = (app: { name: string; route: string }) => {
-    const target = window.open(app.route, `compass-${app.name}`)
+    const target = window.open("", `compass-${app.name}`)
+    if (!target) return
     try {
-        if (target) target.opener = null
+        target.opener = null
     } catch (e) {
         // a reused window of another host has the opener cut already
     }
+    target.location.href = app.route
 }
 
 /** Switch to the other apps of the site, each in its own window, like the apps menu of Helpdesk and CRM. */
