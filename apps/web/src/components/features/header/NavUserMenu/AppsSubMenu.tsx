@@ -17,7 +17,7 @@ const AppsSubMenu = () => {
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
                 {apps.map((app) => (
-                    <DropdownMenuItem key={app.name} onClick={() => { window.location.href = app.route }}>
+                    <DropdownMenuItem key={app.name} onClick={() => { window.open(app.route, "_blank", "noopener") }}>
                         <img src={app.logo} alt="" className="size-4 rounded-sm" />
                         <span>{app.title}</span>
                     </DropdownMenuItem>
