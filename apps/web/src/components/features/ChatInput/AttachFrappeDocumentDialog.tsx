@@ -21,6 +21,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@components/ui/ho
 import { DocumentPreviewSummary, documentPreviewSwrKey } from '@components/features/message/renderers/DocumentLinkRenderer'
 import { linkedDocumentAtom, type LinkedDocument } from '@utils/channelAtoms'
 import _ from '@lib/translate'
+import NextcloudPicker, { NEXTCLOUD_REFERENCE_DOCTYPE } from './NextcloudPicker'
 
 type AttachDocumentForm = {
     doctype: string
@@ -45,6 +46,7 @@ interface AttachFrappeDocumentDialogProps {
  */
 const AttachFrappeDocumentDialog = ({ channelID, open, onOpenChange, hideTrigger }: AttachFrappeDocumentDialogProps) => {
     const [internalOpen, setInternalOpen] = useState(false)
+    const [source, setSource] = useState<'frappe' | 'nextcloud'>('frappe')
     const isOpen = open ?? internalOpen
     const setOpen = onOpenChange ?? setInternalOpen
 
@@ -59,7 +61,10 @@ const AttachFrappeDocumentDialog = ({ channelID, open, onOpenChange, hideTrigger
     // Fresh pickers every time the dialog opens — the previous pick is already
     // staged (or was abandoned), so prefilling it only invites double-attaches.
     useEffect(() => {
-        if (isOpen) reset({ doctype: '', docname: '' })
+        if (isOpen) {
+            reset({ doctype: '', docname: '' })
+            setSource('frappe')
+        }
     }, [isOpen, reset])
 
     // A docname is meaningless once the doctype changes underneath it.
@@ -70,6 +75,11 @@ const AttachFrappeDocumentDialog = ({ channelID, open, onOpenChange, hideTrigger
     const onSubmit = (data: AttachDocumentForm) => {
         setLinkedDocument({ doctype: data.doctype, docname: data.docname })
         addRecentlyUsedDocType(data.doctype)
+        setOpen(false)
+    }
+
+    const onPickNextcloud = (docname: string) => {
+        setLinkedDocument({ doctype: NEXTCLOUD_REFERENCE_DOCTYPE, docname })
         setOpen(false)
     }
 
@@ -95,7 +105,11 @@ const AttachFrappeDocumentDialog = ({ channelID, open, onOpenChange, hideTrigger
                 </Tooltip>
             )}
             <DialogContent>
-                <FormProvider {...methods}>
+                <div className="flex gap-1">
+                    <Button type="button" size="sm" variant={source === 'frappe' ? 'subtle' : 'ghost'} onClick={() => setSource('frappe')}>{_("Apps")}</Button>
+                    <Button type="button" size="sm" variant={source === 'nextcloud' ? 'subtle' : 'ghost'} onClick={() => setSource('nextcloud')}>Nextcloud</Button>
+                </div>
+                {source === 'nextcloud' ? <NextcloudPicker onPick={onPickNextcloud} /> : <FormProvider {...methods}>
                     {/* stopPropagation is load-bearing. This dialog lives inside
                         ChatInput's own form in the REACT tree (the portal doesn't
                         matter to synthetic events), so a bubbled submit would run
@@ -141,7 +155,7 @@ const AttachFrappeDocumentDialog = ({ channelID, open, onOpenChange, hideTrigger
                             </Button>
                         </DialogFooter>
                     </form>
-                </FormProvider>
+                </FormProvider>}
             </DialogContent>
         </Dialog>
     )
