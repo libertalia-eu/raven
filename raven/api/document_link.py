@@ -26,6 +26,9 @@ def get(doctype: str, docname: str | int, with_site_url: bool = True):
 		for hook in document_link_override:
 			link = frappe.get_attr(hook)(doctype, docname)
 			if link:
+				# An app that lives elsewhere (Nextcloud) answers with a full URL.
+				if link.startswith(("https://", "http://")):
+					return link
 				if with_site_url:
 					return get_url(allow_header_override=False) + link
 				return link
@@ -90,6 +93,10 @@ def get_preview_data(doctype: str, docname: str | int):
 	preview_fields.append("creation")
 
 	currency_fields = _currency_source_fields(meta, preview_fields) - set(preview_fields)
+
+	# get_list checks the role only; a document-level rule (has_permission hook) must hold too.
+	if not frappe.has_permission(doctype, "read", doc=docname):
+		return
 
 	preview_data = frappe.get_list(
 		doctype, filters={"name": docname}, fields=[*preview_fields, *currency_fields], limit=1
