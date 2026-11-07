@@ -118,10 +118,7 @@ const AttachFrappeDocumentDialog = ({ channelID, open, onOpenChange, hideTrigger
                             isRequired
                             doctype="DocType"
                             suggestedItems={suggestedItems}
-                            filters={[
-                                ["issingle", "=", 0],
-                                ["istable", "=", 0],
-                            ]}
+                            searchAPIPath="raven.api.document_link.search_readable_doctypes"
                             rules={{ required: _("Document Type is required") }}
                         />
 

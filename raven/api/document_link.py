@@ -37,6 +37,30 @@ def get(doctype: str, docname: str | int, with_site_url: bool = True):
 
 
 @frappe.whitelist(methods=["GET"])
+def search_readable_doctypes(txt: str = "", page_length: int = 10, **kwargs):
+	"""
+	Search link for the "Attach document" picker: only the document types the
+	current user may read, so the picker never offers one that ends in a
+	"No permission" error once a document is chosen.
+	"""
+	page_length = min(int(page_length or 10), 50)
+	candidates = frappe.get_all(
+		"DocType",
+		filters={"issingle": 0, "istable": 0, "name": ["like", f"%{txt}%"]},
+		pluck="name",
+		order_by="name asc",
+	)
+
+	readable = []
+	for doctype in candidates:
+		if frappe.has_permission(doctype, "read"):
+			readable.append({"value": doctype, "description": ""})
+			if len(readable) == page_length:
+				break
+	return readable
+
+
+@frappe.whitelist(methods=["GET"])
 def get_preview_data(doctype: str, docname: str | int):
 	preview_fields = []
 	meta = frappe.get_meta(doctype)
