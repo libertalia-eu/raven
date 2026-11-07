@@ -28,16 +28,14 @@ const NextcloudPicker = ({ onPick }: NextcloudPickerProps) => {
     )
     const providers = providerData?.message ?? []
 
-    const [providerID, setProviderID] = useState('')
+    const [pickedProviderID, setProviderID] = useState('')
+    const providerID = pickedProviderID || providers[0]?.id || ''
     const [term, setTerm] = useState('')
     const [entries, setEntries] = useState<Entry[]>([])
     const [cursor, setCursor] = useState<number | null>(null)
     const [isSearching, setIsSearching] = useState(false)
     const [message, setMessage] = useState('')
 
-    useEffect(() => {
-        if (!providerID && providers.length) setProviderID(providers[0].id)
-    }, [providers, providerID])
 
     const isLink = /^https?:\/\//i.test(term.trim())
 
@@ -55,7 +53,6 @@ const NextcloudPicker = ({ onPick }: NextcloudPickerProps) => {
             })
             .catch(fail)
             .finally(() => setIsSearching(false))
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [call, providerID, term])
 
     // Search while typing, unless the field holds a link: that one is resolved on request.
