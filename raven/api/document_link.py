@@ -39,6 +39,10 @@ def get(doctype: str, docname: str | int, with_site_url: bool = True):
 	return f"/desk/{slug(doctype)}/{docname}"
 
 
+# COMPASS: these have their own tab in the dialog (Nextcloud objects), so the list of document types hides them.
+ATTACHED_ELSEWHERE = ["Nextcloud Reference"]
+
+
 @frappe.whitelist(methods=["GET"])
 def search_readable_doctypes(txt: str = "", page_length: int = 10, **kwargs):
 	"""
@@ -49,7 +53,12 @@ def search_readable_doctypes(txt: str = "", page_length: int = 10, **kwargs):
 	page_length = min(int(page_length or 10), 50)
 	candidates = frappe.get_all(
 		"DocType",
-		filters={"issingle": 0, "istable": 0, "name": ["like", f"%{txt}%"]},
+		filters=[
+			["issingle", "=", 0],
+			["istable", "=", 0],
+			["name", "like", f"%{txt}%"],
+			["name", "not in", ATTACHED_ELSEWHERE],
+		],
 		pluck="name",
 		order_by="name asc",
 	)

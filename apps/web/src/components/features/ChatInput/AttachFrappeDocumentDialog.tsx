@@ -139,6 +139,7 @@ const AttachFrappeDocumentDialog = ({ channelID, open, onOpenChange, hideTrigger
                                 label={_("Document")}
                                 isRequired
                                 doctype={doctype}
+                                hideCreate
                                 rules={{ required: _("Document is required") }}
                             />
                         )}
