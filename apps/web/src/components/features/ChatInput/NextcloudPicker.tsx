@@ -51,6 +51,8 @@ const NextcloudPicker = ({ onPick }: NextcloudPickerProps) => {
 
 
     const isLink = /^https?:\/\//i.test(term.trim())
+    // Nextcloud refuses a search without a term, so nothing is asked until the user types one.
+    const hasTerm = term.trim() !== ''
 
     const fail = (error: FrappeFailure) => setMessage(describeFailure(error))
 
@@ -69,10 +71,10 @@ const NextcloudPicker = ({ onPick }: NextcloudPickerProps) => {
 
     // Search while typing, unless the field holds a link: that one is resolved on request.
     useEffect(() => {
-        if (isLink) return
+        if (isLink || !hasTerm) return
         const timer = setTimeout(() => runSearch(null), 300)
         return () => clearTimeout(timer)
-    }, [runSearch, isLink])
+    }, [runSearch, isLink, hasTerm])
 
     const pick = (entry?: Entry) => {
         setMessage('')
@@ -100,6 +102,9 @@ const NextcloudPicker = ({ onPick }: NextcloudPickerProps) => {
             {isLink ? (
                 <Button type="button" onClick={() => pick()}>{_('Attach this link')}</Button>
             ) : (
+                !hasTerm ? (
+                    <p className="px-2 py-3 text-p-sm text-ink-gray-5">{_('Type to search Nextcloud.')}</p>
+                ) : (
                 <ul className="flex max-h-64 flex-col overflow-y-auto">
                     {entries.map((entry) => (
                         <li key={entry.url}>
@@ -112,6 +117,7 @@ const NextcloudPicker = ({ onPick }: NextcloudPickerProps) => {
                     {!isSearching && !entries.length && <li className="px-2 py-3 text-p-sm text-ink-gray-5">{_('No results found.')}</li>}
                     {cursor && <li><Button type="button" variant="ghost" size="sm" disabled={isSearching} onClick={() => runSearch(cursor)}>{_('Load more')}</Button></li>}
                 </ul>
+                )
             )}
         </div>
     )
