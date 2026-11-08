@@ -11,12 +11,16 @@ type SearchResult = { entries: Entry[]; cursor: number | null }
 
 export const NEXTCLOUD_REFERENCE_DOCTYPE = 'Nextcloud Reference'
 
-type FrappeFailure = { message?: string; exc_type?: string } | undefined
+/** What frappe-react-sdk hands over: the JSON of the failed call, with `message` set to a generic text. The reason is in `exception`. */
+type FrappeFailure = { message?: string; exc_type?: string; exception?: string } | undefined
+
+/** The server's own text: "frappe.exceptions.PermissionError: You have no access" gives "You have no access". */
+const reasonOf = (error: FrappeFailure): string => (error?.exception ?? '').split(': ').slice(1).join(': ')
 
 /** compass_sso raises NextcloudSessionEnded when the Keycloak sign-in behind this session is gone: only a new sign-in helps. */
 const describeFailure = (error: FrappeFailure): string => {
     if (error?.exc_type === 'NextcloudSessionEnded') return _('Your sign-in has ended. Please sign out and sign in again.')
-    if (['PermissionError', 'ValidationError', 'NextcloudUnavailable'].includes(error?.exc_type ?? '')) return error.message || _('Nextcloud is not reachable.')
+    if (['PermissionError', 'ValidationError', 'NextcloudUnavailable'].includes(error?.exc_type ?? '')) return reasonOf(error) || _('Nextcloud is not reachable.')
     return _('Nextcloud is not reachable.')
 }
 
