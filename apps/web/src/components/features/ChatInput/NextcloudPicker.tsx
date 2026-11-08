@@ -16,7 +16,7 @@ type FrappeFailure = { message?: string; exc_type?: string } | undefined
 /** compass_sso raises NextcloudSessionEnded when the Keycloak sign-in behind this session is gone: only a new sign-in helps. */
 const describeFailure = (error: FrappeFailure): string => {
     if (error?.exc_type === 'NextcloudSessionEnded') return _('Your sign-in has ended. Please sign out and sign in again.')
-    if (error?.exc_type === 'PermissionError' || error?.exc_type === 'ValidationError') return error.message || _('Nextcloud is not reachable.')
+    if (['PermissionError', 'ValidationError', 'NextcloudUnavailable'].includes(error?.exc_type ?? '')) return error.message || _('Nextcloud is not reachable.')
     return _('Nextcloud is not reachable.')
 }
 
