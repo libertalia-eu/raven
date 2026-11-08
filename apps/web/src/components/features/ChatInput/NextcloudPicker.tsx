@@ -11,6 +11,15 @@ type SearchResult = { entries: Entry[]; cursor: number | null }
 
 export const NEXTCLOUD_REFERENCE_DOCTYPE = 'Nextcloud Reference'
 
+type FrappeFailure = { message?: string; exc_type?: string } | undefined
+
+/** compass_sso raises NextcloudSessionEnded when the Keycloak sign-in behind this session is gone: only a new sign-in helps. */
+const describeFailure = (error: FrappeFailure): string => {
+    if (error?.exc_type === 'NextcloudSessionEnded') return _('Your sign-in has ended. Please sign out and sign in again.')
+    if (error?.exc_type === 'PermissionError' || error?.exc_type === 'ValidationError') return error.message || _('Nextcloud is not reachable.')
+    return _('Nextcloud is not reachable.')
+}
+
 interface NextcloudPickerProps {
     /** Called with the name of the Nextcloud Reference to stage on the message. */
     onPick: (docname: string) => void
@@ -39,8 +48,7 @@ const NextcloudPicker = ({ onPick }: NextcloudPickerProps) => {
 
     const isLink = /^https?:\/\//i.test(term.trim())
 
-    const fail = (error: { message?: string; exception?: string }) =>
-        setMessage(error?.message || _('Nextcloud is not reachable.'))
+    const fail = (error: FrappeFailure) => setMessage(describeFailure(error))
 
     const runSearch = useCallback((nextCursor: number | null) => {
         if (!providerID) return
@@ -71,7 +79,7 @@ const NextcloudPicker = ({ onPick }: NextcloudPickerProps) => {
 
     if (providersLoading) return <div className="flex h-24 items-center justify-center"><Spinner /></div>
     if (providerError || !providers.length) {
-        return <p className="text-p-sm text-ink-gray-6">{_('Nextcloud is not reachable.')}</p>
+        return <p role="alert" className="text-p-sm text-ink-gray-6">{providerError ? describeFailure(providerError as FrappeFailure) : _('Nextcloud is not reachable.')}</p>
     }
 
     return (
