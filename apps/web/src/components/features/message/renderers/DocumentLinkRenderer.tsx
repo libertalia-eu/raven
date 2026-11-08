@@ -44,6 +44,7 @@ import { slug } from "@lib/frappe"
 import { USER_DATE_FORMAT } from "@lib/date"
 import { DocumentPrintDialog } from "./DocumentPrintDialog"
 import _ from "@lib/translate"
+import { NEXTCLOUD_REFERENCE_DOCTYPE } from '@components/features/ChatInput/NextcloudPicker'
 import { Separator } from "@components/ui/separator"
 
 // For best-effort parsing of server-formatted dates back into dayjs (tooltips).
@@ -258,7 +259,17 @@ const DocumentLinkSkeleton = ({ meta }: { meta?: DoctypeMeta }) => {
 /** Deleted doc / no permission: a quiet reference, not an error box in chat.
  *  `replaced` means another record now holds this name. The name must not
  *  link then: it would open a document the message never meant. */
-const DocumentLinkFallback = ({ doctype, docname, replaced }: { doctype: string; docname: string; replaced?: boolean }) => (
+const DocumentLinkFallback = ({ doctype, docname, replaced }: { doctype: string; docname: string; replaced?: boolean }) => {
+    // COMPASS: a Nextcloud object has no page on this site, so the Desk link below would only say "Not permitted".
+    if (doctype === NEXTCLOUD_REFERENCE_DOCTYPE) {
+        return (
+            <div className={`${cardSurface} flex items-center gap-2`}>
+                <Badge variant="outline" theme="gray">Nextcloud</Badge>
+                <span className="truncate text-p-sm text-ink-gray-6">{_("No access to this Nextcloud object, or it was deleted.")}</span>
+            </div>
+        )
+    }
+    return (
     <div className={`${cardSurface} flex items-center gap-2`}>
         <Badge variant="outline" theme="gray">
             {doctype}
@@ -277,7 +288,8 @@ const DocumentLinkFallback = ({ doctype, docname, replaced }: { doctype: string;
         )}
         {replaced && <span className="shrink-0 text-p-sm text-ink-gray-5">{_("Deleted")}</span>}
     </div>
-)
+    )
+}
 
 /**
  * A document created after the message that links it cannot be the one the
